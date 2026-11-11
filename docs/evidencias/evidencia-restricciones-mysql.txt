@@ -1,0 +1,46 @@
+== Evidencia: migraciones Flyway V1+V2 aplicadas sobre MySQL real (8.0.46-0ubuntu0.24.04.4) ==
+OK: esquema y datos demo cargados
++----------------+---------------+--------+
+| estado         | tipo_vehiculo | celdas |
++----------------+---------------+--------+
+| DISPONIBLE     | CARRO         |     10 |
+| DISPONIBLE     | MOTO          |      6 |
+| FUERA_SERVICIO | CARRO         |      1 |
+| OCUPADA        | CARRO         |      1 |
++----------------+---------------+--------+
+
+== RN-02: segundo movimiento ABIERTO del mismo vehículo (debe fallar) ==
+ERROR 1062 (23000) at line 1: Duplicate entry '4' for key 'movimiento_parqueo.uk_mov_vehiculo_abierto'
+
+== RN-04: segundo movimiento ABIERTO en la misma celda (debe fallar) ==
+ERROR 1062 (23000) at line 1: Duplicate entry '2' for key 'movimiento_parqueo.uk_mov_celda_abierta'
+
+== Varios movimientos CERRADOS del mismo vehículo sí se permiten ==
+OK: insertado
+
+== RN-01: placa en minúsculas o con espacios (debe fallar) ==
+ERROR 3819 (HY000) at line 1: Check constraint 'ck_vehiculo_placa_normalizada' is violated.
+ERROR 3819 (HY000) at line 1: Check constraint 'ck_vehiculo_placa_normalizada' is violated.
+
+== RN-01: placa duplicada (debe fallar) ==
+ERROR 1062 (23000) at line 1: Duplicate entry 'ABC123' for key 'vehiculo.uk_vehiculo_placa'
+
+== RN-06: salida sin usuario de salida (debe fallar) ==
+ERROR 3819 (HY000) at line 1: Check constraint 'ck_mov_salida_coherente' is violated.
+
+== RN-07: novedad con descripción vacía (debe fallar) ==
+ERROR 3819 (HY000) at line 1: Check constraint 'ck_novedad_descripcion' is violated.
+
+== RN-08: borrar un movimiento con novedades (FK RESTRICT, debe fallar) ==
+ERROR 1451 (23000) at line 1: Cannot delete or update a parent row: a foreign key constraint fails (`ev`.`novedad`, CONSTRAINT `fk_novedad_movimiento` FOREIGN KEY (`movimiento_id`) REFERENCES `movimiento_parqueo` (`id`) ON DELETE RESTRICT)
+
+== RN-10: dos transacciones concurrentes por la celda A-01 (SELECT ... FOR UPDATE) ==
+23:22:10.175  T1 bloquea la celda A-01 (estado=DISPONIBLE)
+23:22:10.678  T2 pide la misma celda y queda ESPERANDO el bloqueo...
+23:22:12.177  T1 inserta el movimiento, marca OCUPADA y hace COMMIT
+23:22:12.178  T2 obtiene el bloqueo y lee estado=OCUPADA  -> la API responde 409 CELDA_OCUPADA
++-----------------------------+
+| movimientos_abiertos_en_A01 |
++-----------------------------+
+|                           1 |
++-----------------------------+

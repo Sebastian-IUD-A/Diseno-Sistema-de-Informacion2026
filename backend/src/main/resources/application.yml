@@ -1,0 +1,51 @@
+# =====================================================================
+# Configuración del backend.
+# Los valores ${VARIABLE:valor-por-defecto} se leen de variables de entorno;
+# si la variable no existe se usa el valor después de los dos puntos.
+# Ver README.md → "Variables de entorno". NUNCA escriba secretos reales aquí.
+# =====================================================================
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never        # no filtrar detalles internos en errores no controlados
+
+spring:
+  application:
+    name: autos-colombia
+  datasource:
+    # Las fechas se guardan como LocalDateTime (hora "de pared" de Colombia, calculada con app.zona-horaria).
+    # No se fija serverTimezone para que el driver NO convierta esas horas entre zonas.
+    url: ${DB_URL:jdbc:mysql://localhost:3306/autos_colombia?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}
+    username: ${DB_USER:autos}
+    password: ${DB_PASSWORD:autos_dev}
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    open-in-view: false           # las entidades solo se usan dentro de los servicios
+    hibernate:
+      ddl-auto: none              # el esquema lo maneja Flyway, NO Hibernate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+app:
+  zona-horaria: America/Bogota
+  jwt:
+    # Debe tener al menos 32 caracteres. Si se deja vacío se genera uno temporal en cada arranque.
+    secret: ${JWT_SECRET:}
+    expiracion-minutos: ${JWT_EXPIRACION_MINUTOS:480}
+  cors:
+    origenes: ${CORS_ORIGENES:http://localhost:5173,http://localhost:3000}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

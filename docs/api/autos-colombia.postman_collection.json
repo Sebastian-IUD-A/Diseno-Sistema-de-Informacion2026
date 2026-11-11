@@ -1,0 +1,138 @@
+{
+  "info": {
+    "name": "Autos Colombia - API Iteración 1",
+    "description": "Importe en Postman. Ejecute primero 'Login operador' o 'Login admin': el token se guarda solo en la variable {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" },
+    { "key": "movimientoId", "value": "4" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Login operador",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.collectionVariables.set('token', pm.response.json().token);"] } }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"correo\": \"operador@autoscolombia.co\",\n  \"contrasena\": \"Operador123*\"\n}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Login admin",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.collectionVariables.set('token', pm.response.json().token);"] } }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"correo\": \"admin@autoscolombia.co\",\n  \"contrasena\": \"Admin123*\"\n}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        { "name": "Usuario actual", "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/me" } },
+        { "name": "Cerrar sesión", "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/logout" } }
+      ]
+    },
+    { "name": "Dashboard", "request": { "method": "GET", "url": "{{baseUrl}}/api/dashboard/summary" } },
+    {
+      "name": "Vehículos",
+      "item": [
+        { "name": "Consultar placa vigente (ABC123)", "request": { "method": "GET", "url": "{{baseUrl}}/api/vehicles/ABC123" } },
+        { "name": "Consultar placa vencida (MNO345)", "request": { "method": "GET", "url": "{{baseUrl}}/api/vehicles/MNO345" } },
+        { "name": "Consultar placa inexistente (404)", "request": { "method": "GET", "url": "{{baseUrl}}/api/vehicles/ZZZ999" } }
+      ]
+    },
+    {
+      "name": "Celdas",
+      "item": [
+        { "name": "Listar celdas", "request": { "method": "GET", "url": "{{baseUrl}}/api/cells" } },
+        {
+          "name": "Celdas disponibles para CARRO",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/cells/available?type=CARRO", "host": ["{{baseUrl}}"], "path": ["api", "cells", "available"], "query": [{ "key": "type", "value": "CARRO" }] } }
+        },
+        {
+          "name": "Crear celda (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"codigo\": \"B-05\",\n  \"zona\": \"Zona B - Descubierta\",\n  \"tipoVehiculo\": \"CARRO\",\n  \"estado\": \"DISPONIBLE\"\n}" },
+            "url": "{{baseUrl}}/api/cells"
+          }
+        },
+        {
+          "name": "Poner celda fuera de servicio (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"codigo\": \"A-07\",\n  \"zona\": \"Zona A - Cubierta\",\n  \"tipoVehiculo\": \"CARRO\",\n  \"estado\": \"FUERA_SERVICIO\"\n}" },
+            "url": "{{baseUrl}}/api/cells/7"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Movimientos",
+      "item": [
+        {
+          "name": "Registrar entrada (OPERADOR)",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) pm.collectionVariables.set('movimientoId', pm.response.json().id);"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"abc123\",\n  \"celdaId\": 1\n}" },
+            "url": "{{baseUrl}}/api/movements/entries"
+          }
+        },
+        { "name": "Ocupación actual", "request": { "method": "GET", "url": "{{baseUrl}}/api/movements/active" } },
+        { "name": "Detalle de movimiento", "request": { "method": "GET", "url": "{{baseUrl}}/api/movements/{{movimientoId}}" } },
+        { "name": "Registrar salida (OPERADOR)", "request": { "method": "POST", "url": "{{baseUrl}}/api/movements/{{movimientoId}}/exit" } },
+        {
+          "name": "Historial por placa y fechas (ADMIN)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/movements?plate=ABC123&from=2026-01-01&to=2026-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movements"],
+              "query": [{ "key": "plate", "value": "ABC123" }, { "key": "from", "value": "2026-01-01" }, { "key": "to", "value": "2026-12-31" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Novedades",
+      "item": [
+        {
+          "name": "Registrar novedad (OPERADOR)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"OBJETO_OLVIDADO\",\n  \"descripcion\": \"El cliente dejó una sombrilla en la caseta.\"\n}" },
+            "url": "{{baseUrl}}/api/movements/{{movimientoId}}/incidents"
+          }
+        },
+        {
+          "name": "Novedad sin descripción (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"OTRO\",\n  \"descripcion\": \"   \"\n}" },
+            "url": "{{baseUrl}}/api/movements/{{movimientoId}}/incidents"
+          }
+        },
+        { "name": "Listar novedades", "request": { "method": "GET", "url": "{{baseUrl}}/api/movements/{{movimientoId}}/incidents" } }
+      ]
+    }
+  ]
+}

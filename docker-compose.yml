@@ -1,0 +1,69 @@
+# =====================================================================
+# Autos Colombia — levanta TODO el sistema con un solo comando:
+#
+#     docker compose up --build
+#
+# Luego abra http://localhost:3000
+#
+# Servicios:
+#   mysql     → base de datos MySQL 8.4 (puerto 3307 en su equipo)
+#   backend   → API Spring Boot (puerto 8080, Swagger en /swagger-ui.html)
+#   frontend  → interfaz React servida por Nginx (puerto 3000)
+#
+# Las variables ${VAR:-valor} se pueden cambiar en un archivo .env (ver .env.example).
+# Los valores por defecto son SOLO para demostración local.
+# =====================================================================
+name: autos-colombia
+
+services:
+  mysql:
+    image: mysql:8.4
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=-05:00          # hora de Colombia (sin horario de verano)
+    environment:
+      MYSQL_DATABASE: autos_colombia
+      MYSQL_USER: ${DB_USER:-autos}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-autos_dev}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_dev}
+    ports:
+      - "${DB_PUERTO_HOST:-3307}:3306"
+    volumes:
+      - mysql_datos:/var/lib/mysql
+    healthcheck:
+      # Se usa 127.0.0.1 (TCP) para no dar "sano" durante la inicialización interna de MySQL.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 20s
+
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/autos_colombia?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      DB_USER: ${DB_USER:-autos}
+      DB_PASSWORD: ${DB_PASSWORD:-autos_dev}
+      # Vacío = el backend genera un secreto temporal en cada arranque (válido para demo).
+      JWT_SECRET: ${JWT_SECRET:-}
+      JWT_EXPIRACION_MINUTOS: ${JWT_EXPIRACION_MINUTOS:-480}
+      CORS_ORIGENES: http://localhost:3000,http://localhost:5173
+      TZ: America/Bogota
+    ports:
+      - "${BACKEND_PUERTO_HOST:-8080}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: on-failure
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "${FRONTEND_PUERTO_HOST:-3000}:80"
+    depends_on:
+      - backend
+    restart: on-failure
+
+volumes:
+  mysql_datos:

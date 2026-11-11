@@ -1,0 +1,33 @@
+ RUN  v5.1.0 /home/claude/autos-colombia/frontend
+ ✓ src/features/login/LoginPage.test.tsx > LoginPage > tiene campos con etiqueta accesible 29ms
+ ✓ src/features/login/LoginPage.test.tsx > LoginPage > valida campos vacíos sin llamar al servidor 71ms
+ ✓ src/features/login/LoginPage.test.tsx > LoginPage > muestra el mensaje del backend cuando las credenciales son inválidas 125ms
+stderr | src/features/login/LoginPage.test.tsx > LoginPage > guarda el token al iniciar sesión correctamente
+No routes matched location "/" 
+ ✓ src/features/login/LoginPage.test.tsx > LoginPage > guarda el token al iniciar sesión correctamente 129ms
+ ✓ src/features/entrada/EntradaPage.test.tsx > EntradaPage > autorización vencida: muestra el motivo y no ofrece celdas 133ms
+ ✓ src/features/entrada/EntradaPage.test.tsx > EntradaPage > placa inexistente: muestra el error del backend 42ms
+ ✓ src/features/entrada/EntradaPage.test.tsx > EntradaPage > entrada correcta: elige celda, confirma y envía solo placa y celda (sin usuario) 84ms
+ ✓ src/features/entrada/EntradaPage.test.tsx > EntradaPage > si la celda fue ocupada por otro operador (409) muestra el error y recarga las celdas 78ms
+ ✓ src/features/salida/SalidaPage.test.tsx > SalidaPage > busca la placa, confirma y registra la salida 123ms
+ ✓ src/features/salida/SalidaPage.test.tsx > SalidaPage > cancelar en el diálogo no registra nada 37ms
+ ✓ src/features/salida/SalidaPage.test.tsx > SalidaPage > avisa cuando la placa no está dentro 13ms
+ ✓ src/components/DialogoConfirmacion.test.tsx > DialogoConfirmacion > es un diálogo accesible con foco inicial en Cancelar y se cierra con Escape 59ms
+ ✓ src/components/DialogoConfirmacion.test.tsx > DialogoConfirmacion > deshabilita los botones mientras procesa 6ms
+ ✓ src/api/client.test.ts > cliente HTTP > envía el token en la cabecera Authorization 4ms
+ ✓ src/api/client.test.ts > cliente HTTP > convierte el error del backend en ApiError con código y mensaje 1ms
+ ✓ src/api/client.test.ts > cliente HTTP > avisa a la sesión cuando el token ya no es válido (401) 1ms
+ ✓ src/api/client.test.ts > cliente HTTP > omite parámetros vacíos en la URL 1ms
+ ✓ src/api/client.test.ts > cliente HTTP > informa cuando no hay conexión con el servidor 1ms
+ ✓ src/layout/navegacion.test.ts > menú por rol > el OPERADOR ve entrada y salida, pero no historial ni celdas 3ms
+ ✓ src/layout/navegacion.test.ts > menú por rol > el ADMINISTRADOR ve historial y celdas, pero no registra entradas ni salidas 0ms
+ ✓ src/utils/formato.test.ts > formato > normaliza placas a mayúsculas sin espacios externos (RN-01) 1ms
+ ✓ src/utils/formato.test.ts > formato > muestra duraciones legibles 0ms
+ ✓ src/utils/formato.test.ts > formato > interpreta las fechas del backend como hora local, sin cambiar de zona 0ms
+ Test Files  7 passed (7)
+      Tests  23 passed (23)
+   Start at  23:22:22
+   Duration  4.79s (environment 56%, tests 23%, setup 14%, import 5%, transform 2%, worker 1%)
+Environment  jsdom was created 7 times · 2.33s total, 56% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
